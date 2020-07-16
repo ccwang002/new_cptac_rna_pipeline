@@ -13,7 +13,4 @@ RUN conda config --add channels defaults \
         pandas=1.0.5 \
         star=2.6.1d \
         samtools=1.10 htslib=1.10 \
-        subread=2.0.1 \
-        picard=2.21.4 \
-        rsem=1.3.1
     && conda clean -y --all
