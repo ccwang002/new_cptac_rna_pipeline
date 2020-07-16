@@ -95,10 +95,10 @@ class FileMapping:
         for sample, fqs in fastq_map.items():
             if not fqs:
                 raise ValueError(f'{sample} has no FASTQs')
-            if any(fq_pth is None for fq_pth in fqs.values())
+            if any(fq_pth is None for fq_pth in fqs.values()):
                 raise ValueError(f'{sample} has unpaired FASTQs')
 
-        samples_without_fq = set(self.samples) - set(fastq_map):
+        samples_without_fq = set(self.samples) - set(fastq_map)
         if samples_without_fq:
             ValueError(
                 f"These samples have no FASTQs: {' '.join(samples_without_fq)}"

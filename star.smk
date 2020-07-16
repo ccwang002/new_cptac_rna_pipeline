@@ -181,11 +181,3 @@ rule star_align_all_samples:
             "quant_gene_count_tab_gzs": rules.gzip_star_quant_tab.output,
             "sj_count_tab_gzs": rules.gzip_star_sj_tab.output
         }))
-        # sorted_bams=expand(rules.samtools_sort_bam.output, sample=SAMPLES),
-        # sorted_bam_bais=expand(rules.samtools_sort_bam.output + '.bai', sample=SAMPLES),
-        # chimeric_bams=expand(rules.samtools_sort_star_chimeric_bam.output, sample=SAMPLES),
-        # chimeric_bam_bais=expand(rules.samtools_sort_star_chimeric_bam.output + '.bai', sample=SAMPLES),
-        # chimeric_junction_gzs=expand(rules.gzip_star_chimeric_junction.output, sample=SAMPLES),
-        # quant_tx_bams=expand(rules.star_align.output.quant_tx_bam, sample=SAMPLES),
-        # quant_gene_count_tab_gzs=expand(rules.gzip_star_quant_tab.output, sample=SAMPLES),
-        # sj_count_tab_gzs=expand(rules.gzip_star_sj_tab.output, sample=SAMPLES)
