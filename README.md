@@ -1,7 +1,7 @@
 # CPTAC Bulk RNA Expression pipeline
 The pipeline aligns bulk RNA-seq reads and produces aligned BAMs, readcount, and FPKM.
 
-Based on GTEx RNA pipeline compatible to GDC reference
+Based on [GTEx RNA pipeline](https://github.com/broadinstitute/gtex-pipeline) compatible to GDC reference.
 
 
 ## Release
