@@ -1,0 +1,8 @@
+__default__:
+  - '-G compute-dinglab'
+  - '-g /liang-bo.wang/cptac_rna'
+  - '-a 'docker(lbwang/cptac_rna_expression)'
+
+star_align_all_samples:
+  - '-N'
+  - '-u liang-bo.wang@wustl.edu'

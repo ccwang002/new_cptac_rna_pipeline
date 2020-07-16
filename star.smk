@@ -48,7 +48,7 @@ rule star_align:
     input: unpack(find_sample_fqs)
     params:
         star_ix=STAR_INDEX_FOLDER,
-        out_folder='star/{sample}/'
+        out_folder='star/{sample}/',
         outSAMattrRGline=create_rg_line
     log: 'logs/star/{sample}.log'
     threads: 8
@@ -119,8 +119,8 @@ rule samtools_sort_star_bam:
     threads: 8
     resources:
         io_heavy=1,
-        mem_mb=lambda wildcards, attempt: 16000 + 8000 * (attempt - 1)
-        tmp = "50GB"
+        mem_mb=lambda wildcards, attempt: 16000 + 8000 * (attempt - 1),
+        tmp_mb = 50000
     shell:
         "samtools sort "
         "--threads {threads} -m 1500M "
@@ -134,8 +134,8 @@ rule samtools_sort_star_chimeric_bam:
     threads: 4
     resources:
         io_heavy=1,
-        mem_mb=lambda wildcards, attempt: 4000 + 8000 * (attempt - 1)
-        tmp = "8GB"
+        mem_mb=lambda wildcards, attempt: 4000 + 8000 * (attempt - 1),
+        tmp_mb = 8000
     shell:
         "samtools sort "
         "--threads {threads} -m 1500M "
