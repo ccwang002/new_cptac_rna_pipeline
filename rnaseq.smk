@@ -4,8 +4,9 @@ from pathlib import Path
 from find_input import FileMapping
 
 WORKFLOW_ROOT = config['workflow_root']
-GENE_GTF_PTH = config['gdc_gtf']
+GENE_LEVEL_GTF_PTH = config['gene_level_gtf']
 STAR_INDEX_FOLDER = config['star_index']  # Path to the STAR index
+RSEM_REF_PREFIX = config['rsem_ref']  # Path to the RSEM index prefix
 
 
 filemap = FileMapping(
@@ -213,3 +214,52 @@ rule star_align_all_samples:
             "quant_gene_count_tab_gzs": rules.gzip_star_quant_tab.output[0], \
             "sj_count_tab_gzs": rules.gzip_star_sj_tab.output[0] \
         })
+
+
+rule rsem_calc_expression:
+    output:
+        genes="rsem/{sample}.rsem.genes.results",
+        isoforms="rsem/{sample}.rsem.isoforms.results
+    input: bam=rules.star_align.output.quant_tx_bam
+    threads: 8
+    resources:
+        mem_mb=lambda wildcards, attempt: 48000 + 8000 * (attempt - 1),
+        tmp_mb=32000
+    params:
+        rsem_ref_prefix=RSEM_REF_PREFIX
+    log: 'logs/rsem/{sample}.log'
+    shell:
+        "rsem-calculate-expression "
+        "--num-threads {threads} "
+        "--temporary-folder $(mktemp -d) "
+        "--no-bam-output "
+        "--fragment-length-max 1000 "
+        "--paired-end "
+        "--estimate-rspd "
+        "--forward-prob 0.0 "  # Stranded
+        "--bam {input.bam} "
+        "{params.rsem_ref_prefix} "
+        "rsem/{sample}.rsem "
+        "2>{log} 1>&2"
+
+
+rule rnaseqc:
+    output:
+        metrics="rnaseqc/{sample}.metrics.tsv",
+        exon_reads="rnaseqc/{sample}.exon_reads.gct",
+        gene_tpm="rnaseqc/{sample}.gene_tpm.gct",
+        gene_reads="rnaseqc/{sample}.gene_reads.gct"
+    input:
+        bam=rules.picard_mark_dup.output.bam
+    params:
+        gene_level_gtf=GENE_LEVEL_GTF_PTH
+    shell:
+        "rnaseqc "
+        "-s {sample} "
+        "--stranded rf "
+        "-vv "
+        "-- "
+        "{params.gene_level_gtf} "
+        "{input.bam} "
+        "rnaseqc "
+        "2>{log} 1>&2"
