@@ -152,7 +152,7 @@ class Submitter:
 
     @property
     def queue(self) -> str:
-        return self.cluster.get("queue", "dinglab")
+        return self.cluster.get("queue", "general")
 
     @property
     def queue_cmd(self) -> str:

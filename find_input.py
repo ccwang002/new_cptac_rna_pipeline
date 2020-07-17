@@ -45,7 +45,7 @@ class FileMapping:
     def read_samples(self):
         """Read in the list of samples."""
         with open(self.sample_list_pth) as f:
-            samples = f.read().splitlines()
+            samples = [x for x in f.read().splitlines() if x]
 
         unique_samples = set(samples)
         # Find sample duplications
