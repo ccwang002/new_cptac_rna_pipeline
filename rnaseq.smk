@@ -274,8 +274,8 @@ rule rnaseqc:
 
 
 rule expression_all_samples:
-    input **expand_to_all_samples({
-        'rsem_genes': rules.rsem_calc_expression.output.genes,
-        'rsem_isoforms': rules.rsem_calc_expression.output.isoforms,
-        'rnaseqc_gene_tpm': rules.rnaseqc.gene_tpm
+    input **expand_to_all_samples({ \
+        'rsem_genes': rules.rsem_calc_expression.output.genes, \
+        'rsem_isoforms': rules.rsem_calc_expression.output.isoforms, \
+        'rnaseqc_gene_tpm': rules.rnaseqc.gene_tpm, \
     })
