@@ -22,14 +22,14 @@ Possible result types are:
 ## Run the pipeline
 
 ### Setup
-The easiest way is to start a conda environment with all the dependencies:
+The following command won't work due to package conflicts. See `Dockerfile`:
+
 ```
 conda create -n cptac_gtex_rna python=3.8 \
     snakemake-minimal=5.20.1 \
     pandas=1.0.5 \
     star=2.6.1d \
     samtools=1.10 htslib=1.10 \
-    subread=2.0.1 \
     picard=2.21.4 \
     rsem=1.3.1
 ```
