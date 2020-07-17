@@ -9,4 +9,4 @@ snakemake \
     --restart-times 2 \
     --resources io_heavy=4 \
     -- \
-    star_align_all_samples
+    star_align_all_samples expression_all_samples

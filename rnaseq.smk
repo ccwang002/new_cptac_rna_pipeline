@@ -222,7 +222,9 @@ rule rsem_calc_expression:
     output:
         genes="rsem/{sample}.rsem.genes.results",
         isoforms="rsem/{sample}.rsem.isoforms.results"
-    input: bam=rules.star_align.output.quant_tx_bam
+    input:
+        bam=rules.star_align.output.quant_tx_bam,
+        bai=rules.star_align.output.quant_tx_bam + '.bai'
     threads: 8
     resources:
         mem_mb=lambda wildcards, attempt: 48000 + 8000 * (attempt - 1),
@@ -252,7 +254,11 @@ rule rnaseqc:
         gene_tpm="rnaseqc/{sample}.gene_tpm.gct",
         gene_reads="rnaseqc/{sample}.gene_reads.gct"
     input:
-        bam=rules.picard_mark_dup.output.bam
+        bam=rules.picard_mark_dup.output.bam,
+        bai=rules.picard_mark_dup.output.bam + '.bai'
+    threads: 4
+    resources:
+        mem_mb=lambda wildcards, attempt: 16000 + 8000 * (attempt - 1),
     params:
         gene_level_gtf=GENE_LEVEL_GTF_PTH
     shell:
@@ -265,3 +271,11 @@ rule rnaseqc:
         "{input.bam} "
         "rnaseqc "
         "2>{log} 1>&2"
+
+
+rule expression_all_samples:
+    input **expand_to_all_samples({
+        'rsem_genes': rules.rsem_calc_expression.output.genes,
+        'rsem_isoforms': rules.rsem_calc_expression.output.isoforms,
+        'rnaseqc_gene_tpm': rules.rnaseqc.gene_tpm
+    })
