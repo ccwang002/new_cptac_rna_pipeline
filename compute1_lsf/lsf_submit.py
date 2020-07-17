@@ -129,7 +129,7 @@ class Submitter:
 
     @property
     def logdir(self) -> Path:
-        project_logdir = Path(self.cluster.get("logdir", "logs/cluster")
+        project_logdir = Path(self.cluster.get("logdir", "logs/cluster"))
         return project_logdir / self.rule_name / self.wildcards_str
 
     @property
@@ -152,7 +152,7 @@ class Submitter:
 
     @property
     def queue(self) -> str:
-        return self.cluster.get("queue", "general")
+        return self.cluster.get("queue", "dinglab")
 
     @property
     def queue_cmd(self) -> str:

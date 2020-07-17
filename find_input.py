@@ -1,10 +1,12 @@
-from collection import Counter, defaultdict
+from collections import Counter, defaultdict
+import csv
 from dataclasses import dataclass
+import gzip
 import logging
 from pathlib import Path
 import re
 
-logger = logging.getLoger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def compression_aware_open(pth):
@@ -27,6 +29,8 @@ class FileMapping:
 
         logger.info(f'... read catalog')
         self.uuid_to_catalog = self.read_catalog()
+
+        # A reverse mapping from file path to its details from the catalog
         self.pth_to_catalog = {}
 
         logger.info(f'... finding FASTQs')
@@ -75,6 +79,9 @@ class FileMapping:
     def build_fastq_map(self):
         fastq_map = defaultdict(lambda: {'R1': None, 'R2': None})
         for row in self.iter_file_map():
+            # Samples not selected will not be in the mapping
+            if row['UUID'] not in self.uuid_to_catalog:
+                continue
             correct_file_type = (
                 row['experimental_strategy'] == 'RNA-Seq'
                 and row['data_format'] == 'FASTQ'
@@ -83,11 +90,9 @@ class FileMapping:
                 continue
             catalog = self.uuid_to_catalog[row['UUID']]
             sample = catalog['aliquot']
-            if not sample in self.samples:
-                continue
 
-            fq_pth = Path(row['Path'])
-            read_strand = re.search(r'(R[12]).fastq.gz$', fq_pth.name).group(1)
+            fq_pth = Path(row['data_path'])
+            read_strand = re.search(r'_(R[12])_\d+\.fastq\.gz$', fq_pth.name).group(1)
             fastq_map[sample][read_strand] = fq_pth
             self.pth_to_catalog[fq_pth] = catalog
 

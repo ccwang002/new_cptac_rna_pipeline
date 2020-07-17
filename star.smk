@@ -1,6 +1,5 @@
 from textwrap import dedent
 from pathlib import Path
-import logging
 
 from find_input import FileMapping
 
@@ -8,7 +7,6 @@ WORKFLOW_ROOT = config['workflow_root']
 GENE_GTF_PTH = config['gdc_gtf']
 STAR_INDEX_FOLDER = config['star_index']  # Path to the STAR index
 
-_logger = logging.getLogger(__name__)
 
 filemap = FileMapping(
     # The mapping of sample name to other information.
@@ -29,7 +27,7 @@ def find_sample_fqs(wildcards):
 
 
 def create_rg_line(wildcards, input):
-    fq_name = Path(input.r1_fq[0]).name
+    fq_name = Path(input.r1_fq).name
     m = re.search(r'_R[12]_\d+\.fastq\.gz$', fq_name)
     rg = fq_name[:m.start()]
     return f"ID:{rg} SM:{wildcards.sample}"
@@ -163,7 +161,7 @@ rule gzip_star_chimeric_junction:
 
 def expand_to_all_samples(patterns):
     return {
-        name: expand(pattern, sample=SAMPLES)
+        name: expand(pattern, sample=filemap.samples)
         for name, pattern in patterns.items()
     }
 
@@ -171,13 +169,13 @@ def expand_to_all_samples(patterns):
 rule star_align_all_samples:
     """Align all RNA-seq samples."""
     input:
-        unpack(expand_to_all_samples({
-            "sorted_bams": rules.samtools_sort_bam.output,
-            "sorted_bam_bais": rules.samtools_sort_bam.output + '.bai',
-            "chimeric_bams": rules.samtools_sort_star_chimeric_bam.output,
-            "chimeric_bam_bais": rules.samtools_sort_star_chimeric_bam.output + '.bai',
-            "chimeric_junction_gzs": rules.gzip_star_chimeric_junction.output,
-            "quant_tx_bams": rules.star_align.output.quant_tx_bam,
-            "quant_gene_count_tab_gzs": rules.gzip_star_quant_tab.output,
-            "sj_count_tab_gzs": rules.gzip_star_sj_tab.output
-        }))
+        **expand_to_all_samples({ \
+            "sorted_bams": rules.samtools_sort_star_bam.output[0], \
+            "sorted_bam_bais": rules.samtools_sort_star_bam.output[0] + '.bai', \
+            "chimeric_bams": rules.samtools_sort_star_chimeric_bam.output[0], \
+            "chimeric_bam_bais": rules.samtools_sort_star_chimeric_bam.output[0] + '.bai', \
+            "chimeric_junction_gzs": rules.gzip_star_chimeric_junction.output[0], \
+            "quant_tx_bams": rules.star_align.output.quant_tx_bam, \
+            "quant_gene_count_tab_gzs": rules.gzip_star_quant_tab.output[0], \
+            "sj_count_tab_gzs": rules.gzip_star_sj_tab.output[0] \
+        })
