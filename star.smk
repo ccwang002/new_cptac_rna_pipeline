@@ -161,6 +161,35 @@ rule gzip_star_chimeric_junction:
     shell: "gzip -9n -c {input} > {output}"
 
 
+rule picard_mark_dup:
+    output:
+        bam='star/{sample}/Aligned.sortedByCoord.out.md.bam',
+        metrics='star/{sample}/Aligned.sortedByCoord.out.marked_dup_metrics.txt'
+    input: bam=rules.samtools_sort_star_bam.output
+    threads: 8
+    resources:
+        io_heavy=1,
+        mem_mb=lambda wildcards, attempt: 32000 + 16000 * (attempt - 1),
+        tmp_mb=32000
+    params:
+        jar_pth="/usr/local/lib/picard-tools/picard.jar",
+        java_mem_gb=lambda wildcards, resources: resouces.mem_mb - 500
+    log: 'logs/picard_mark_dup/{sample}.log'
+    shell:
+        "java -jar -Xmx{params.java_mem_mb}m {params.jar_pth} "
+        "MarkDuplicates "
+        "I={input.bam} O={output.bam} "
+        "PROGRAM_RECORD_ID=null "
+        "MAX_RECORDS_IN_RAM=500000 "
+        "SORTING_COLLECTION_SIZE_RATIO=0.25 "
+        "TMP_DIR=$(mktemp -d) "
+        "M={output.metrics} "
+        "ASSUME_SORT_ORDER=coordinate "
+        "TAGGING_POLICY=DontTag "
+        "OPTICAL_DUPLICATE_PIXEL_DISTANCE=100 "
+        "2>{log} 1>&2"
+
+
 def expand_to_all_samples(patterns):
     return {
         name: expand(pattern, sample=filemap.samples)
@@ -174,6 +203,9 @@ rule star_align_all_samples:
         **expand_to_all_samples({ \
             "sorted_bams": rules.samtools_sort_star_bam.output[0], \
             "sorted_bam_bais": rules.samtools_sort_star_bam.output[0] + '.bai', \
+            "mark_dup_bams": rules.picard_mark_dup.output.bam, \
+            "mark_dup_bam_bais": rules.picard_mark_dup.output.bam + '.bai', \
+            "mark_dup_metric_txts": rules.picard_mark_dup.output.metrics, \
             "chimeric_bams": rules.samtools_sort_star_chimeric_bam.output[0], \
             "chimeric_bam_bais": rules.samtools_sort_star_chimeric_bam.output[0] + '.bai', \
             "chimeric_junction_gzs": rules.gzip_star_chimeric_junction.output[0], \
