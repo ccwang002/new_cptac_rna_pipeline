@@ -52,7 +52,8 @@ rule star_align:
     threads: 8
     resources:
         io_heavy=1,
-        mem_mb=lambda wildcards, attempt: 32000 + 16000 * (attempt - 1)
+        mem_mb=lambda wildcards, attempt: 32000 + 16000 * (attempt - 1),
+        tmp_mb=32000
     shell:
         "STAR "
         "--readFilesIn {input.r1_fq} {input.r2_fq} "
@@ -99,6 +100,7 @@ rule star_align:
         "--readFilesCommand zcat "
         "--runThreadN {threads} "
         "--twopassMode Basic "
+        "--outTmpDir $(mktemp -d) "
         "> {log}"
 
 
@@ -118,7 +120,7 @@ rule samtools_sort_star_bam:
     resources:
         io_heavy=1,
         mem_mb=lambda wildcards, attempt: 16000 + 8000 * (attempt - 1),
-        tmp_mb = 50000
+        tmp_mb=50000
     shell:
         "samtools sort "
         "--threads {threads} -m 1500M "
@@ -133,7 +135,7 @@ rule samtools_sort_star_chimeric_bam:
     resources:
         io_heavy=1,
         mem_mb=lambda wildcards, attempt: 4000 + 8000 * (attempt - 1),
-        tmp_mb = 8000
+        tmp_mb=8000
     shell:
         "samtools sort "
         "--threads {threads} -m 1500M "
