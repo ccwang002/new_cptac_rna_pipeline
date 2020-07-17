@@ -1,4 +1,4 @@
-export PATH="/opt/conda/bin:$PATH"
+# export PATH="/opt/conda/bin:$PATH"
 
 snakemake \
     --profile=/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/bulk_rna_pipeline_development/new_cptac_rna_pipeline/compute1_lsf \
