@@ -176,7 +176,7 @@ rule picard_mark_dup:
         tmp_mb=32000
     params:
         jar_pth="/usr/local/lib/picard-tools/picard.jar",
-        java_mem_gb=lambda wildcards, resources: resouces.mem_mb - 500
+        java_mem_mb=lambda wildcards, resources: resources.mem_mb - 500
     log: 'logs/picard_mark_dup/{sample}.log'
     shell:
         "java -jar -Xmx{params.java_mem_mb}m {params.jar_pth} "
@@ -221,7 +221,7 @@ rule star_align_all_samples:
 rule rsem_calc_expression:
     output:
         genes="rsem/{sample}.rsem.genes.results",
-        isoforms="rsem/{sample}.rsem.isoforms.results
+        isoforms="rsem/{sample}.rsem.isoforms.results"
     input: bam=rules.star_align.output.quant_tx_bam
     threads: 8
     resources:
@@ -241,7 +241,7 @@ rule rsem_calc_expression:
         "--forward-prob 0.0 "  # Stranded
         "--bam {input.bam} "
         "{params.rsem_ref_prefix} "
-        "rsem/{sample}.rsem "
+        "rsem/{wildcards.sample}.rsem "
         "2>{log} 1>&2"
 
 
@@ -257,7 +257,7 @@ rule rnaseqc:
         gene_level_gtf=GENE_LEVEL_GTF_PTH
     shell:
         "rnaseqc "
-        "-s {sample} "
+        "-s {wildcards.sample} "
         "--stranded rf "
         "-vv "
         "-- "
