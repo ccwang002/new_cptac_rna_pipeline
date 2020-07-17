@@ -28,7 +28,7 @@ class Submitter:
         self,
         jobscript: PathLike,
         cluster_cmds: List[str] = None,
-        memory_units: Unit = Unit.MEGA,
+        memory_units: Unit = Unit.KILO,
         lsf_config: Optional[Config] = None,
     ):
         if cluster_cmds is None:
@@ -66,7 +66,7 @@ class Submitter:
     @property
     def mem_mb(self) -> Memory:
         mem_value = self.resources.get(
-            "mem_mb", self.cluster.get("mem_mb", "KB")
+            "mem_mb", self.cluster.get("mem_mb", "1024")
         )
         return Memory(mem_value, unit=Unit.MEGA)
 
@@ -76,14 +76,17 @@ class Submitter:
 
     @property
     def resources_cmd(self) -> str:
-        mem_in_clusters_units = self.mem_mb.to(self.memory_units)
-        mem_value_to_submit = math.ceil(mem_in_clusters_units.value)
+        # mem_in_clusters_units = self.mem_mb.to(self.memory_units)
+        # mem_value_to_submit = math.ceil(mem_in_clusters_units.value)
 
+        mem_mb = self.resources.get("mem_mb", 4000)
         tmp_mb = self.resources.get("tmp_mb", 0)
         return (
-            "-M {mem} -n {threads} "
-            "-R 'select[mem>{mem} && tmp>{tmp}MB] rusage[mem={mem}, tmp={tmp}MB] span[hosts=1]'"
-        ).format(mem=mem_value_to_submit, threads=self.threads, tmp=tmp_mb)
+            "-M {mem}MB -n {threads} "
+            "-R 'select[mem>{mem}MB && tmp>{tmp}MB] "
+            " rusage[mem={mem}MB, tmp={tmp}MB] "
+            " span[hosts=1]'"
+        ).format(mem=mem_mb, threads=self.threads, tmp=tmp_mb)
 
     @property
     def wildcards(self) -> dict:
