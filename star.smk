@@ -122,7 +122,7 @@ rule samtools_sort_star_bam:
     shell:
         "samtools sort "
         "--threads {threads} -m 1500M "
-        "-T $(mktemp -d)"
+        "-T $(mktemp -d) "
         "-o {output} {input}"
 
 
@@ -137,7 +137,7 @@ rule samtools_sort_star_chimeric_bam:
     shell:
         "samtools sort "
         "--threads {threads} -m 1500M "
-        "-T $(mktemp -d)"
+        "-T $(mktemp -d) "
         "-o {output} {input}"
 
 
