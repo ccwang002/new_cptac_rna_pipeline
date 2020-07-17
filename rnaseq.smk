@@ -223,8 +223,7 @@ rule rsem_calc_expression:
         genes="rsem/{sample}.rsem.genes.results",
         isoforms="rsem/{sample}.rsem.isoforms.results"
     input:
-        bam=rules.star_align.output.quant_tx_bam,
-        bai=rules.star_align.output.quant_tx_bam + '.bai'
+        bam=rules.star_align.output.quant_tx_bam
     threads: 8
     resources:
         mem_mb=lambda wildcards, attempt: 48000 + 8000 * (attempt - 1),
@@ -274,8 +273,8 @@ rule rnaseqc:
 
 
 rule expression_all_samples:
-    input **expand_to_all_samples({ \
+    input: **expand_to_all_samples({ \
         'rsem_genes': rules.rsem_calc_expression.output.genes, \
         'rsem_isoforms': rules.rsem_calc_expression.output.isoforms, \
-        'rnaseqc_gene_tpm': rules.rnaseqc.gene_tpm, \
+        'rnaseqc_gene_tpm': rules.rnaseqc.output.gene_tpm, \
     })
