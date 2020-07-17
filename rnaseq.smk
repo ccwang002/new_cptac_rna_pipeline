@@ -120,11 +120,13 @@ rule samtools_sort_star_bam:
     threads: 8
     resources:
         io_heavy=1,
-        mem_mb=lambda wildcards, attempt: 16000 + 8000 * (attempt - 1),
+        mem_mb=lambda wildcards, attempt: 32000 + 8000 * (attempt - 1),
         tmp_mb=50000
     shell:
         "samtools sort "
-        "--threads {threads} -m 1400M "
+        "--threads {threads} "
+        # it uses much more memory than what's specified below
+        "-m 1400M "
         "-T $(mktemp -d) "
         "-o {output} {input}"
 
