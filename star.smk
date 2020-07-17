@@ -52,7 +52,7 @@ rule star_align:
     threads: 8
     resources:
         io_heavy=1,
-        mem_mb=lambda wildcards, attempt: 32000 + 16000 * (attempt - 1),
+        mem_mb=lambda wildcards, attempt: 40000 + 8000 * (attempt - 1),
         tmp_mb=32000
     shell:
         "STAR "
@@ -100,7 +100,7 @@ rule star_align:
         "--readFilesCommand zcat "
         "--runThreadN {threads} "
         "--twopassMode Basic "
-        "--outTmpDir $(mktemp -d) "
+        "--outTmpDir $(mktemp -d)/_STARtmp "
         "> {log}"
 
 
