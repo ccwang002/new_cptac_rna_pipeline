@@ -260,6 +260,7 @@ rule rnaseqc:
         mem_mb=lambda wildcards, attempt: 16000 + 8000 * (attempt - 1),
     params:
         gene_level_gtf=GENE_LEVEL_GTF_PTH
+    log: 'logs/rnaseqc/{sample}.log'
     shell:
         "rnaseqc "
         "-s {wildcards.sample} "
