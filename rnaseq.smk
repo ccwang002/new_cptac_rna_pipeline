@@ -1,7 +1,7 @@
 import csv
 from pathlib import Path
 
-from find_input import FileMapping
+from find_input import FASTQFileMapping as FileMapping
 
 WORKFLOW_ROOT = config['workflow_root']
 GENE_LEVEL_GTF_PTH = config['gene_level_gtf']

@@ -33,15 +33,6 @@ class FileMapping:
         # A reverse mapping from file path to its details from the catalog
         self.pth_to_catalog = {}
 
-        logger.info(f'... finding FASTQs')
-        # FASTQ map structcure
-        # {
-        #     sample1_id: {R1: fq_pth, R2: fq_pth}
-        #     sample2_id: { ... },
-        #     ...
-        # }
-        self.fastq_map = self.build_fastq_map()
-
     def read_samples(self):
         """Read in the list of samples."""
         with open(self.sample_list_pth) as f:
@@ -76,6 +67,21 @@ class FileMapping:
             for row in reader:
                 yield row
 
+
+class FASTQFileMapping(FileMapping):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        logger.info(f'... finding FASTQs')
+        # FASTQ map structcure
+        # {
+        #     sample1_id: {R1: fq_pth, R2: fq_pth}
+        #     sample2_id: { ... },
+        #     ...
+        # }
+        self.fastq_map = self.build_fastq_map()
+
     def build_fastq_map(self):
         fastq_map = defaultdict(lambda: {'R1': None, 'R2': None})
         for row in self.iter_file_map():
@@ -109,3 +115,48 @@ class FileMapping:
                 f"These samples have no FASTQs: {' '.join(samples_without_fq)}"
             )
         return fastq_map
+
+
+class BAMFileMapping(FileMapping):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        logger.info(f'... finding BAMs')
+        # BAM map structcure
+        # {
+        #     sample1_id: {'genomic': bam_pth, 'transcriptome': bam_pth},
+        #     sample2_id: { ... },
+        #     ...
+        # }
+        self.bam_map = self.build_bam_map()
+
+    def build_bam_map(self):
+        bam_map = defaultdict(dict)
+        for row in self.iter_file_map():
+            # Samples not selected will not be in the mapping
+            if row['UUID'] not in self.uuid_to_catalog:
+                continue
+
+            catalog = self.uuid_to_catalog[row['UUID']]
+            sample = catalog['aliquot']
+            correct_file_type = (
+                row['experimental_strategy'] == 'RNA-Seq'
+                and row['data_format'] == 'BAM'
+                and row['reference'] == 'hg38'
+                and catalog['result_type'] in ['genomic', 'transcriptome']
+            )
+            if not correct_file_type:
+                continue
+
+            pth = Path(row['data_path'])
+            bam_map[sample][catalog['result_type']] = pth
+            self.pth_to_catalog[pth] = catalog
+
+        # Validate the mapping
+        samples_without_bam = set(self.samples) - set(bam_map)
+        if samples_without_bam:
+            ValueError(
+                f"These samples have no BAMs: {' '.join(samples_without_bam)}"
+            )
+        return bam_map
