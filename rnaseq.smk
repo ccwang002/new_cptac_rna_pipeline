@@ -206,9 +206,9 @@ rule star_align_all_samples:
         **expand_to_all_samples({ \
             "sorted_bams": rules.samtools_sort_star_bam.output[0], \
             "sorted_bam_bais": rules.samtools_sort_star_bam.output[0] + '.bai', \
-            "mark_dup_bams": rules.picard_mark_dup.output.bam, \
-            "mark_dup_bam_bais": rules.picard_mark_dup.output.bam + '.bai', \
-            "mark_dup_metric_txts": rules.picard_mark_dup.output.metrics, \
+            # "mark_dup_bams": rules.picard_mark_dup.output.bam, \
+            # "mark_dup_bam_bais": rules.picard_mark_dup.output.bam + '.bai', \
+            # "mark_dup_metric_txts": rules.picard_mark_dup.output.metrics, \
             "chimeric_bams": rules.samtools_sort_star_chimeric_bam.output[0], \
             "chimeric_bam_bais": rules.samtools_sort_star_chimeric_bam.output[0] + '.bai', \
             "chimeric_junction_gzs": rules.gzip_star_chimeric_junction.output[0], \
@@ -220,8 +220,8 @@ rule star_align_all_samples:
 
 rule rsem_calc_expression:
     output:
-        genes="rsem/{sample}.rsem.genes.results",
-        isoforms="rsem/{sample}.rsem.isoforms.results"
+        genes=temporary("rsem/{sample}.rsem.genes.results"),
+        isoforms=temporary("rsem/{sample}.rsem.isoforms.results")
     input:
         bam=rules.star_align.output.quant_tx_bam
     threads: 8
@@ -246,12 +246,19 @@ rule rsem_calc_expression:
         "2>{log} 1>&2"
 
 
+rule gzip_rsem_outputs:
+    output: "rsem/{name}.results.gz"
+    input: "rsem/{name}.results"
+    shell: "gzip -9n -c {input} > {output}"
+
+
 rule rnaseqc:
     output:
         metrics="rnaseqc/{sample}.metrics.tsv",
-        exon_reads="rnaseqc/{sample}.exon_reads.gct",
-        gene_tpm="rnaseqc/{sample}.gene_tpm.gct",
-        gene_reads="rnaseqc/{sample}.gene_reads.gct"
+        exon_reads=temporary("rnaseqc/{sample}.exon_reads.gct"),
+        gene_fragments=temporary("rnaseqc/{sample}.gene_fragments.gct"),
+        gene_reads=temporary("rnaseqc/{sample}.gene_reads.gct"),
+        gene_tpm=temporary("rnaseqc/{sample}.gene_tpm.gct"),
     input:
         bam=rules.picard_mark_dup.output.bam,
         bai=rules.picard_mark_dup.output.bam + '.bai'
@@ -273,9 +280,18 @@ rule rnaseqc:
         "2>{log} 1>&2"
 
 
+rule gzip_rnaseqc_gcts:
+    output: "rnaseqc/{name}.gct.gz"
+    input: "rnaseqc/{name}.gct"
+    shell: "gzip -9n -c {input} > {output}"
+
+
 rule expression_all_samples:
     input: **expand_to_all_samples({ \
-        'rsem_genes': rules.rsem_calc_expression.output.genes, \
-        'rsem_isoforms': rules.rsem_calc_expression.output.isoforms, \
-        'rnaseqc_gene_tpm': rules.rnaseqc.output.gene_tpm, \
+        'rsem_genes': rules.rsem_calc_expression.output.genes + '.gz', \
+        'rsem_isoforms': rules.rsem_calc_expression.output.isoforms + '.gz', \
+        'rnaseqc_exon_reads': rules.rnaseqc.output.exon_reads + '.gz', \
+        'rnaseqc_gene_fragments': rules.rnaseqc.output.gene_fragments + '.gz', \
+        'rnaseqc_gene_reads': rules.rnaseqc.output.gene_reads + '.gz', \
+        'rnaseqc_gene_tpm': rules.rnaseqc.output.gene_tpm + '.gz', \
     })

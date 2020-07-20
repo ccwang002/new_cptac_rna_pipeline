@@ -13,9 +13,7 @@ Each batch of execution will produce a TSV `analysis_summary.dat` containing all
 Possible result types are:
 - genomic_bam
 - transcriptomic_bam
-- chimeric_sam
-- fpkm_tsv
-- splic_junction_tab
+- chimeric_bam
 
 
 
@@ -38,22 +36,30 @@ conda create -n cptac_gtex_rna python=3.8 \
 ### Create a new batch
 1. Copy `example_batch/` to the desired location to store the output
 2. Modify the `snakemake_config.json` to ensure all file paths exist
-3. Define the file map and the list of samples to run the pipeline (same format as the example)
+3. When using LSF, modifiy `lsf.yaml` to ensure all variables and paths are valid
+4. When not using LSF, ensure `$TMPDIR` is set to a sufficiently large space (> 300GB)
+5. Define the file map and the sample list to run the pipeline
 
 ```
-# Create the result summary of the alignment outputs and readcount TSVs
-snakemake --configfile=snakemake_config.json -s ../pipeline_workflow/Snakefile \
-    --cores 54 -p \
+# When using LSF,
+bash run.sh
+
+# When not using LSF,
+snakemake --configfile=snakemake_config.json \
+    -s /path/to/repo/rnaseq.smk \
+    -j 54 -p \
     --resouces io_heavy=5 -- \
-    make_analysis_summary
-
-# Only the alignment
-snakemake ... star_align_all_samples
-
-# All readcount and FPKMs
-snakemake ... all_fpkms
+    star_align_all_samples expression_all_samples
 ```
 
+Clean up the outputs:
+
+```
+# Further compress the outputs
+cd rsem/
+parallel -j4 --bar 'tar czf {}.tar.gz {}' ::: *.rsem.stat
+rm -rf *.rsem.stat
+```
 
 ## Processing description
 
