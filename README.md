@@ -1,20 +1,11 @@
-# CPTAC Bulk RNA Expression pipeline
-The pipeline aligns bulk RNA-seq reads and produces aligned BAMs, readcount, and FPKM.
+# CPTAC Bulk RNA Expression pipeline (experimental)
+The pipeline aligns bulk RNA-seq reads using STAR and quantifies gene level expression using RNASeQC and isoform level expression using RSEM. It's based on [GTEx RNA pipeline](https://github.com/broadinstitute/gtex-pipeline), but the annotation is compatible to GDC's reference.
 
-Based on [GTEx RNA pipeline](https://github.com/broadinstitute/gtex-pipeline) compatible to GDC reference.
+You probably want to use the original pipeline. This repo was created for me to understand the details of the pipeline.
 
 
 ## Release
 - Still developing
-
-## Output
-Each batch of execution will produce a TSV `analysis_summary.dat` containing all results.
-
-Possible result types are:
-- genomic_bam
-- transcriptomic_bam
-- chimeric_bam
-
 
 
 ## Run the pipeline
@@ -70,15 +61,9 @@ rm -rf cluster rnaseqc
 gzip -9 */*.log
 ```
 
-## Processing description
 
-### Genome alignment
+## Annotation
 STAR v2.6.1d with GDC's genome reference [GRCh38.d1.vd1][GDC Reference Files] and [GENCODE v22][gencode-gtf].
 
 [GDC Reference Files]: https://gdc.cancer.gov/about-data/data-harmonization-and-generation/gdc-reference-files
 [gencode-gtf]: https://api.gdc.cancer.gov/data/25aa497c-e615-4cb7-8751-71f744f9691f
-[GDC's formula]: https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/Expression_mRNA_Pipeline/#upper-quartile-fpkm
-
-
-
-
