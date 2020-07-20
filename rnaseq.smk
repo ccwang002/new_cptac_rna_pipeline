@@ -226,7 +226,7 @@ rule rsem_calc_expression:
         bam=rules.star_align.output.quant_tx_bam
     threads: 8
     resources:
-        mem_mb=lambda wildcards, attempt: 48000 + 8000 * (attempt - 1),
+        mem_mb=lambda wildcards, attempt: 36000 + 8000 * (attempt - 1),
         tmp_mb=32000
     params:
         rsem_ref_prefix=RSEM_REF_PREFIX
@@ -255,9 +255,9 @@ rule rnaseqc:
     input:
         bam=rules.picard_mark_dup.output.bam,
         bai=rules.picard_mark_dup.output.bam + '.bai'
-    threads: 4
+    threads: 2
     resources:
-        mem_mb=lambda wildcards, attempt: 16000 + 8000 * (attempt - 1),
+        mem_mb=lambda wildcards, attempt: 8000 + 8000 * (attempt - 1),
     params:
         gene_level_gtf=GENE_LEVEL_GTF_PTH
     log: 'logs/rnaseqc/{sample}.log'
