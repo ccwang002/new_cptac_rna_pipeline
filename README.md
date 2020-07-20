@@ -11,7 +11,10 @@ You probably want to use the original pipeline. This repo was created for me to 
 ## Run the pipeline
 
 ### Setup
-The following command won't work due to package conflicts. See `Dockerfile`:
+Use the Docker image [`lbwang/cptac_rna_gtex_snakemake`](https://hub.docker.com/repository/docker/lbwang/cptac_rna_gtex_snakemake).
+See `Dockerfile` for the detailed tool versions and build steps.
+
+The following conda command won't work due to package conflicts:
 
 ```
 conda create -n cptac_gtex_rna python=3.8 \
