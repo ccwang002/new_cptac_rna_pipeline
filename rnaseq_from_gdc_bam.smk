@@ -84,6 +84,7 @@ rule rsem_calc_expression:
     params:
         rsem_ref_prefix=RSEM_REF_PREFIX
     log: 'logs/rsem/{sample}.log'
+    group: "rsem"
     shell:
         "rsem-calculate-expression "
         "--num-threads {threads} "
@@ -102,6 +103,7 @@ rule rsem_calc_expression:
 rule gzip_rsem_outputs:
     output: "rsem/{name}.results.gz"
     input: "rsem/{name}.results"
+    group: "rsem"
     shell: "gzip -9n -c {input} > {output}"
 
 
@@ -121,6 +123,7 @@ rule rnaseqc:
     params:
         gene_level_gtf=GENE_LEVEL_GTF_PTH
     log: 'logs/rnaseqc/{sample}.log'
+    group: "rnaseqc"
     shell:
         "rnaseqc "
         "-s {wildcards.sample} "
@@ -136,6 +139,7 @@ rule rnaseqc:
 rule gzip_rnaseqc_gcts:
     output: "rnaseqc/{name}.gct.gz"
     input: "rnaseqc/{name}.gct"
+    group: "rnaseqc"
     shell: "gzip -9n -c {input} > {output}"
 
 
