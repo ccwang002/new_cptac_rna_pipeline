@@ -1,4 +1,4 @@
-from textwrap import dedent
+import csv
 from pathlib import Path
 
 from find_input import FileMapping
@@ -40,7 +40,7 @@ rule star_align:
         unsorted_bam=temporary('star/{sample}/Aligned.out.bam'),
         # sorted_bam='star/{sample}/Aligned.sortedByCoord.out.bam',
         chimeric_sam=temporary('star/{sample}/Chimeric.out.sam'),
-        chimeric_junction='star/{sample}/Chimeric.out.junction',
+        chimeric_junction=temporary('star/{sample}/Chimeric.out.junction'),
         quant_tx_bam='star/{sample}/Aligned.toTranscriptome.out.bam',
         quant_gene_count_tab=temporary('star/{sample}/ReadsPerGene.out.tab'),
         sj_count_tab=temporary('star/{sample}/SJ.out.tab'),
@@ -216,6 +216,52 @@ rule star_align_all_samples:
             "quant_gene_count_tab_gzs": rules.gzip_star_quant_tab.output[0], \
             "sj_count_tab_gzs": rules.gzip_star_sj_tab.output[0] \
         })
+
+
+rule make_alignment_output_manifest:
+    output:
+        manifest='alignment_summary.dat'
+    input: rules.star_align_all_samples.input
+    run:
+        result_file_tpls = {
+            ('genomic_bam', 'BAM'): rules.samtools_sort_star_bam.output[0],
+            ('transcriptomic_bam', 'BAM'): rules.star_align.output.quant_tx_bam,
+            ('chimeric_bam', 'BAM'): rules.samtools_sort_star_chimeric_bam.output[0],
+            ('chimeric_junction', 'TSV'): rules.gzip_star_chimeric_junction.output[0],
+            ('STAR_gene_count_tab', 'TSV'): rules.gzip_star_quant_tab.output[0],
+            ('splic_junction_tab', 'TSV'): rules.gzip_star_sj_tab.output[0],
+        }
+        with open(output.manifest, 'w') as f:
+            writer = csv.writer(f, dialect='excel-tab', lineterminator='\n')
+            # Write column header
+            cols = [
+                '# case', 'disease', 'short_sample_type', 'aliquot',
+                'result_type', 'result_path', 'result_format',
+                'sample_name_fastq_R1', 'sample_uuid_fastq_R1',
+                'sample_name_fastq_R2', 'sample_uuid_fastq_R2',
+            ]
+            writer.writerow(cols)
+
+            for sample in filemap.samples:
+                # Get sample info
+                fq_pths = [filemap.fastq_map[sample][strand] for strand in ['R1', 'R2']]
+
+                fq_catalogs = [filemap.pth_to_catalog[pth] for pth in fq_pths]
+                fq_uuids = [c['UUID'] for c in fq_catalogs]
+                fq_names = [c['# sample_name'] for c in fq_catalogs]
+                case = fq_catalogs[0]['case']
+                disease = fq_catalogs[0]['disease']
+                sample_type = fq_catalogs[0]['short_sample_type']
+
+                for (result_type, result_format), pth_fmt in result_file_tpls.items():
+                    # Get absolute file path
+                    abs_result_path = Path(pth_fmt.format(sample=sample)).resolve(strict=True)
+                    writer.writerow([
+                        case, disease, sample_type, sample,
+                        result_type, str(abs_result_path), result_format,
+                        fq_names[0], fq_uuids[0],
+                        fq_names[1], fq_uuids[1],
+                    ])
 
 
 rule rsem_calc_expression:

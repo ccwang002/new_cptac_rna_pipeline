@@ -50,15 +50,24 @@ snakemake --configfile=snakemake_config.json \
     -j 54 -p \
     --resouces io_heavy=5 -- \
     star_align_all_samples expression_all_samples
+
+# Generate the alignment manifest
+snakemake ... make_alignment_output_manifest
 ```
 
 Clean up the outputs:
 
 ```
-# Further compress the outputs
+# Further compress the outputs and logs
+rm -rf .snakemake/
+
 cd rsem/
 parallel -j4 --bar 'tar czf {}.tar.gz {}' ::: *.rsem.stat
 rm -rf *.rsem.stat
+
+cd ../logs
+rm -rf cluster rnaseqc
+gzip -9 */*.log
 ```
 
 ## Processing description
