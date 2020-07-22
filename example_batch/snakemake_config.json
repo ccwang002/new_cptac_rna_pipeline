@@ -4,6 +4,6 @@
     "catalog": "CPTAC3.Catalog.commit_32faf10.dat.gz",
     "star_index": "/storage1/fs1/dinglab/Active/Resources/References/GDC_GENCODE_v22/star_genome_d1_vd1_gtfv22.rebuild",
     "rsem_ref": "/storage1/fs1/dinglab/Active/Resources/References/GDC_GENCODE_v22/rsem/rsem_genome_d1_vd1_gtfv22",
-    "gene_level_gtf": "/storage1/fs1/dinglab/Active/Resources/References/GDC_GENCODE_v22/gencode.v22.annotation.gtf",
+    "gene_level_gtf": "/storage1/fs1/dinglab/Active/Resources/References/GDC_GENCODE_v22/gencode.v22.genes.collapsed_only.gtf",
     "workflow_root": "/storage1/fs1/dinglab/Active/Projects/CPTAC3/Analysis/bulk_rna_pipeline_development/new_cptac_rna_pipeline"
 }
